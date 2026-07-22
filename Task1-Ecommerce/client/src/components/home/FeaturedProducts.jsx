@@ -2,54 +2,32 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { FaShoppingCart, FaStar, FaHeart, FaEye } from "react-icons/fa";
 
-const featuredProducts = [
-  {
-    id: 1,
-    title: "Wireless ANC Headphones",
-    category: "Electronics",
-    price: 199,
-    originalPrice: 249,
-    rating: 4.9,
-    reviews: 128,
-    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600",
-    tag: "Best Seller",
-  },
-  {
-    id: 2,
-    title: "Minimalist Leather Watch",
-    category: "Accessories",
-    price: 149,
-    originalPrice: 189,
-    rating: 4.8,
-    reviews: 95,
-    image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600",
-    tag: "Sale",
-  },
-  {
-    id: 3,
-    title: "Smart Fitness Tracker",
-    category: "Electronics",
-    price: 89,
-    originalPrice: 119,
-    rating: 4.7,
-    reviews: 210,
-    image: "https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?w=600",
-    tag: "New",
-  },
-  {
-    id: 4,
-    title: "Ergonomic Desk Lamp",
-    category: "Home & Lifestyle",
-    price: 65,
-    originalPrice: 85,
-    rating: 4.9,
-    reviews: 64,
-    image: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=600",
-    tag: "Popular",
-  },
-];
-
+import { useEffect, useState } from "react";
+import axios from "axios";
 const FeaturedProducts = () => {
+
+  const [products, setProducts] = useState([]);
+const [loading, setLoading] = useState(true);
+
+useEffect(() => {
+  fetchProducts();
+}, []);
+
+const fetchProducts = async () => {
+  try {
+    const res = await axios.get(
+      "http://localhost:5000/api/products"
+    );
+
+    setProducts(res.data.products);
+
+  } catch (error) {
+    console.log(error);
+
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <section className="bg-slate-950 text-white py-20 relative overflow-hidden">
       {/* Decorative Background Glows */}
@@ -77,19 +55,22 @@ const FeaturedProducts = () => {
         </div>
 
         {/* Product Cards Grid */}
+        
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featuredProducts.map((product) => (
+          {products.map((product) => (
             <div
               key={product.id}
               className="group relative rounded-2xl bg-slate-900/60 border border-slate-800/80 hover:border-blue-500/50 backdrop-blur-xl overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-blue-500/10 flex flex-col justify-between"
             >
               {/* Image Container with Badges */}
               <div className="relative aspect-4/3 sm:aspect-square overflow-hidden bg-slate-800/50">
+                <Link to={`/product/${product._id}`}>
                 <img
                   src={product.image}
                   alt={product.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                 />
+                </Link>
 
                 {/* Badge Tag */}
                 <span className="absolute top-3 left-3 bg-slate-950/80 backdrop-blur-md text-blue-400 border border-slate-700/80 text-[10px] font-bold px-2.5 py-1 rounded-lg uppercase tracking-wider">
@@ -151,6 +132,7 @@ const FeaturedProducts = () => {
                 </div>
               </div>
             </div>
+            
           ))}
         </div>
 

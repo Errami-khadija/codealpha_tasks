@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 import {
   FaEnvelope,
   FaLock,
@@ -10,7 +12,70 @@ import {
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
+const [formData, setFormData] = useState({
+  email: "",
+  password: "",
+});
+
+const handleChange = (e) => {
+  setFormData({
+    ...formData,
+    [e.target.name]: e.target.value,
+  });
+};
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    const response = await fetch(
+      "http://localhost:5000/api/auth/login",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      Swal.fire({
+        icon: "error",
+        title: "Login Failed",
+        text: data.message,
+      });
+
+      return;
+    }
+
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+
+    Swal.fire({
+      icon: "success",
+      title: "Welcome Back!",
+      text: data.message,
+      timer: 1500,
+      showConfirmButton: false,
+    });
+
+    setTimeout(() => {
+      navigate("/");
+    }, 1500);
+
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "Server Error",
+      text: "Something went wrong.",
+    });
+  }
+};
   return (
     <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center py-12 px-4 relative overflow-hidden">
       {/* Background Glows */}
@@ -62,7 +127,7 @@ const Login = () => {
             </p>
           </div>
 
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-4" onSubmit={handleSubmit}>
 
             {/* Email Input */}
             <div className="relative">
@@ -70,6 +135,9 @@ const Login = () => {
               <input
                 type="email"
                 placeholder="Email Address"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
                 className="w-full pl-11 pr-4 py-3.5 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
               />
             </div>
@@ -80,6 +148,9 @@ const Login = () => {
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
                 className="w-full pl-11 pr-11 py-3.5 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
               />
               <button

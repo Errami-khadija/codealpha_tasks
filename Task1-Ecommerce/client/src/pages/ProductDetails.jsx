@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
 import { 
   FaStar, 
   FaShoppingCart, 
@@ -11,25 +13,53 @@ import {
 } from "react-icons/fa";
 
 const ProductDetails = () => {
-  const product = {
-    name: "Premium Wireless Headphones",
-    price: 149.99,
-    rating: 4.8,
-    reviews: 245,
-    description:
-      "Experience crystal-clear sound with these premium wireless headphones. Featuring active noise cancellation, ultra-long battery life, and an ergonomic over-ear design built for extended listening sessions.",
-    image:
-      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=900",
-    thumbnails: [
-      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300",
-      "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=300",
-      "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=300",
-    ],
-  };
+  
 
-  const [quantity, setQuantity] = useState(1);
-  const [selectedImage, setSelectedImage] = useState(product.image);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+ const { id } = useParams();
+
+const [product, setProduct] = useState(null);
+const [loading, setLoading] = useState(true);
+
+const [quantity, setQuantity] = useState(1);
+const [selectedImage, setSelectedImage] = useState("");
+const [isWishlisted, setIsWishlisted] = useState(false);
+
+useEffect(() => {
+  fetchProduct();
+}, [id]);
+
+const fetchProduct = async () => {
+  try {
+    const res = await axios.get(
+      `http://localhost:5000/api/products/${id}`
+    );
+
+    setProduct(res.data.product);
+    setSelectedImage(res.data.product.image);
+
+  } catch (error) {
+    console.log(error);
+
+  } finally {
+    setLoading(false);
+  }
+};
+
+if (loading) {
+  return (
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
+      Loading...
+    </div>
+  );
+}
+
+if (!product) {
+  return (
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center text-red-500">
+      Product not found.
+    </div>
+  );
+}
 
   return (
     <div className="bg-slate-950 text-white min-h-screen py-12 relative overflow-hidden">
@@ -48,7 +78,7 @@ const ProductDetails = () => {
             <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl overflow-hidden backdrop-blur-xl relative aspect-square sm:aspect-[4/3] lg:aspect-square flex items-center justify-center p-4">
               <img
                 src={selectedImage}
-                alt={product.name}
+                alt={product.title}
                 className="w-full h-full object-cover rounded-xl transition-all duration-300"
               />
               <span className="absolute top-4 left-4 bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold px-3 py-1 rounded-full backdrop-blur-md">
@@ -58,24 +88,16 @@ const ProductDetails = () => {
 
             {/* Thumbnails */}
             <div className="flex gap-4">
-              {product.thumbnails.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImage(image)}
-                  className={`relative w-24 h-24 rounded-xl overflow-hidden bg-slate-900/60 border-2 transition-all p-1 ${
-                    selectedImage === image
-                      ? "border-blue-500 scale-105 shadow-lg shadow-blue-500/20"
-                      : "border-slate-800/80 hover:border-slate-700 opacity-70 hover:opacity-100"
-                  }`}
-                >
-                  <img
-                    src={image}
-                    alt={`Thumbnail ${index + 1}`}
-                    className="w-full h-full object-cover rounded-lg"
-                  />
-                </button>
-              ))}
-            </div>
+  <button
+    className="w-24 h-24 rounded-xl overflow-hidden border-2 border-blue-500 p-1"
+  >
+    <img
+      src={product.image}
+      alt={product.title}
+      className="w-full h-full object-cover rounded-lg"
+    />
+  </button>
+</div>
           </div>
 
           {/* Right: Product Details & Purchase Controls */}
@@ -85,10 +107,10 @@ const ProductDetails = () => {
               {/* Category & Title */}
               <div>
                 <span className="text-blue-400 text-xs font-semibold uppercase tracking-widest px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 inline-block mb-3">
-                  Audio & Electronics
+                 {product.category}
                 </span>
                 <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
-                  {product.name}
+                  {product.title}
                 </h1>
               </div>
 
@@ -110,7 +132,11 @@ const ProductDetails = () => {
                   ${product.price}
                 </p>
                 <span className="text-sm text-slate-500 line-through font-medium">
-                  $199.99
+                 {product.originalPrice && (
+    <span className="text-sm text-slate-500 line-through font-medium">
+        ${product.originalPrice}
+    </span>
+)}
                 </span>
               </div>
 

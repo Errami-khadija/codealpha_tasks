@@ -9,10 +9,93 @@ import {
   FaEyeSlash,
   FaCheckCircle,
 } from "react-icons/fa";
+import Swal from "sweetalert2";
+
+
 
 const Register = () => {
+
+  const [formData, setFormData] = useState({
+  fullName: "",
+  email: "",
+  phone: "",
+  password: "",
+  confirmPassword: "",
+});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+
+const handleChange = (e) => {
+  setFormData({
+    ...formData,
+    [e.target.name]: e.target.value,
+  });
+};
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (formData.password !== formData.confirmPassword) {
+    Swal.fire({
+      icon: "error",
+      title: "Passwords do not match",
+      text: "Please enter matching passwords.",
+      confirmButtonColor: "#dc2626",
+    });
+    return;
+  }
+
+  try {
+    const response = await fetch("http://localhost:5000/api/auth/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        fullName: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      Swal.fire({
+        icon: "error",
+        title: "Registration Failed",
+        text: data.message,
+        confirmButtonColor: "#dc2626",
+      });
+      return;
+    }
+
+    Swal.fire({
+      icon: "success",
+      title: "Account Created!",
+      text: data.message,
+      confirmButtonColor: "#2563eb",
+    });
+
+   
+    setFormData({
+      fullName: "",
+      email: "",
+      phone: "",
+      password: "",
+      confirmPassword: "",
+    });
+
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "Server Error",
+      text: "Something went wrong. Please try again later.",
+      confirmButtonColor: "#dc2626",
+    });
+  }
+};
 
   return (
     <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center py-12 px-4 relative overflow-hidden">
@@ -75,7 +158,7 @@ const Register = () => {
             </p>
           </div>
 
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-4" onSubmit={handleSubmit}>
 
             {/* Name Input */}
             <div className="relative">
@@ -83,6 +166,9 @@ const Register = () => {
               <input
                 type="text"
                 placeholder="Full Name"
+                 name="fullName"
+                 value={formData.fullName}
+                 onChange={handleChange}
                 className="w-full pl-11 pr-4 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
               />
             </div>
@@ -93,6 +179,9 @@ const Register = () => {
               <input
                 type="email"
                 placeholder="Email Address"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
                 className="w-full pl-11 pr-4 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
               />
             </div>
@@ -103,6 +192,9 @@ const Register = () => {
               <input
                 type="tel"
                 placeholder="Phone Number"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
                 className="w-full pl-11 pr-4 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
               />
             </div>
@@ -113,6 +205,9 @@ const Register = () => {
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
                 className="w-full pl-11 pr-11 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
               />
               <button
@@ -131,6 +226,9 @@ const Register = () => {
               <input
                 type={showConfirm ? "text" : "password"}
                 placeholder="Confirm Password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
                 className="w-full pl-11 pr-11 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
               />
               <button
