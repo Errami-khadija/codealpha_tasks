@@ -3,7 +3,10 @@ import { Link } from "react-router-dom";
 import { FaShoppingCart, FaStar, FaHeart, FaEye } from "react-icons/fa";
 
 import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 import axios from "axios";
+import { addToCart } from "../../services/cartService";
+
 const FeaturedProducts = () => {
 
   const [products, setProducts] = useState([]);
@@ -26,6 +29,33 @@ const fetchProducts = async () => {
 
   } finally {
     setLoading(false);
+  }
+};
+
+const handleAddToCart = async (productId) => {
+  try {
+    await addToCart(productId);
+
+    Swal.fire({
+      toast: true,
+      position: "top-end",
+      icon: "success",
+      title: "Product added to cart!",
+      showConfirmButton: false,
+      timer: 2000,
+      timerProgressBar: true,
+    });
+
+  } catch (error) {
+    Swal.fire({
+      toast: true,
+      position: "top-end",
+      icon: "error",
+      title: error.response?.data?.message || "Failed to add product to cart.",
+      showConfirmButton: false,
+      timer: 2500,
+      timerProgressBar: true,
+    });
   }
 };
   return (
@@ -85,12 +115,7 @@ const fetchProducts = async () => {
                   >
                     <FaHeart className="text-xs" />
                   </button>
-                  <button 
-                    aria-label="Quick View" 
-                    className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-700/80 text-slate-300 hover:text-blue-400 hover:bg-slate-900 transition-all shadow-md"
-                  >
-                    <FaEye className="text-xs" />
-                  </button>
+                 
                 </div>
               </div>
 
@@ -123,12 +148,13 @@ const fetchProducts = async () => {
                     )}
                   </div>
 
-                  <button
-                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all shadow-lg shadow-blue-600/20 active:scale-95"
-                  >
-                    <FaShoppingCart className="text-xs" />
-                    <span>Add</span>
-                  </button>
+                 <button
+  onClick={() => handleAddToCart(product._id)}
+  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl cursor-pointer bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold"
+>
+  <FaShoppingCart className="text-xs" />
+  <span>Add</span>
+</button>
                 </div>
               </div>
             </div>

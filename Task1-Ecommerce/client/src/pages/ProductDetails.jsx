@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { addToCart } from "../services/cartService";
+import Swal from "sweetalert2";
 import axios from "axios";
 import { 
   FaStar, 
@@ -60,6 +62,32 @@ if (!product) {
     </div>
   );
 }
+
+const handleAddToCart = async () => {
+  try {
+    await addToCart(product._id, quantity);
+
+    Swal.fire({
+      toast: true,
+      position: "top-end",
+      icon: "success",
+      title: "Product added to cart!",
+      showConfirmButton: false,
+      timer: 2000,
+      timerProgressBar: true,
+    });
+  } catch (error) {
+    Swal.fire({
+      toast: true,
+      position: "top-end",
+      icon: "error",
+      title: error.response?.data?.message || "Failed to add product to cart.",
+      showConfirmButton: false,
+      timer: 2500,
+      timerProgressBar: true,
+    });
+  }
+};
 
   return (
     <div className="bg-slate-950 text-white min-h-screen py-12 relative overflow-hidden">
@@ -177,10 +205,13 @@ if (!product) {
 
               {/* Action Buttons */}
               <div className="flex gap-4 pt-2">
-                <button className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-xl font-bold flex justify-center items-center gap-3 transition-all shadow-lg shadow-blue-600/20 active:scale-[0.99]">
-                  <FaShoppingCart />
-                  <span>Add to Cart</span>
-                </button>
+               <button
+  onClick={handleAddToCart}
+  className="flex-1 cursor-pointer bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-xl font-bold flex justify-center items-center gap-3 transition-all shadow-lg shadow-blue-600/20 active:scale-[0.99]"
+>
+  <FaShoppingCart />
+  <span>Add to Cart</span>
+</button>
 
                 <button
                   onClick={() => setIsWishlisted(!isWishlisted)}
