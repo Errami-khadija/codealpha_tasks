@@ -1,5 +1,10 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { useEffect} from "react";
+import { getCart } from "../services/cartService";
+import { placeOrder } from "../services/orderService";
+import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 import { 
   FaArrowLeft, 
   FaCreditCard, 
@@ -13,7 +18,80 @@ import {
 
 const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState("card");
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+  fullName: "",
+  phone: "",
+  address: "",
+  city: "",
+  postalCode: "",
+  country: "",
+  paymentMethod: "Cash on Delivery",
+});
 
+const [cartItems, setCartItems] = useState([]);
+useEffect(() => {
+  fetchCart();
+}, []);
+
+const fetchCart = async () => {
+  try {
+    const res = await getCart();
+    setCartItems(res.data.cart?.items || []);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const handleChange = (e) => {
+  setFormData({
+    ...formData,
+    [e.target.name]: e.target.value,
+  });
+};
+
+const handlePlaceOrder = async () => {
+  try {
+    await placeOrder({
+      shippingAddress: {
+        fullName: formData.fullName,
+        phone: formData.phone,
+        address: formData.address,
+        city: formData.city,
+        postalCode: formData.postalCode,
+        country: formData.country,
+      },
+      paymentMethod: formData.paymentMethod,
+    });
+     Swal.fire({
+          icon: "success",
+          title: "Order placed successfully!",
+          text: "Thank you for your purchase. Your order has been placed.",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+    navigate("/profile");
+  } catch (error) {
+    Swal.fire({
+      toast: true,
+      position: "top-end",
+      icon: "error",
+      title: "Failed to place order.",
+      showConfirmButton: false,
+      timer: 3000
+    }
+    );
+  }
+};
+
+const subtotal = cartItems.reduce(
+  (total, item) => total + item.product.price * item.quantity,
+  0
+);
+
+const tax = subtotal > 0 ? 12.5 : 0;
+
+const total = subtotal + tax;
   return (
     <div className="bg-slate-950 text-white min-h-screen py-12 relative overflow-hidden">
       {/* Background Decorative Glows */}
@@ -62,25 +140,19 @@ const Checkout = () => {
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-xs font-semibold text-slate-300 mb-2">
-                        First Name
+                        Full Name
                       </label>
                       <input
                         type="text"
+                        name="fullName"
+                        value={formData.fullName}
+                        onChange={handleChange}
                         placeholder="John"
                         className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-2">
-                        Last Name
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="Doe"
-                        className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
-                      />
-                    </div>
+                   
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-6 mt-6">
@@ -90,6 +162,9 @@ const Checkout = () => {
                       </label>
                       <input
                         type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
                         placeholder="john@example.com"
                         className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                       />
@@ -101,6 +176,9 @@ const Checkout = () => {
                       </label>
                       <input
                         type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
                         placeholder="+1 (555) 000-0000"
                         className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                       />
@@ -124,6 +202,9 @@ const Checkout = () => {
                       </label>
                       <input
                         type="text"
+                        name="address"
+                        value={formData.address}
+                        onChange={handleChange}
                         placeholder="123 Shopping Blvd, Suite 100"
                         className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                       />
@@ -136,6 +217,9 @@ const Checkout = () => {
                         </label>
                         <input
                           type="text"
+                          name="city"
+                          value={formData.city}
+                          onChange={handleChange}
                           placeholder="New York"
                           className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                         />
@@ -147,6 +231,9 @@ const Checkout = () => {
                         </label>
                         <input
                           type="text"
+                          name="postalCode"
+                          value={formData.postalCode}
+                          onChange={handleChange}
                           placeholder="10001"
                           className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                         />
@@ -158,6 +245,9 @@ const Checkout = () => {
                         </label>
                         <input
                           type="text"
+                          name="country"
+                          value={formData.country}
+                          onChange={handleChange}
                           placeholder="United States"
                           className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                         />
@@ -168,101 +258,9 @@ const Checkout = () => {
 
                 <hr className="border-slate-800/80" />
 
-                {/* Section 3: Payment Method */}
-                <div>
-                  <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2.5">
-                    <FaCreditCard className="text-blue-400 text-lg" />
-                    <span>Payment Selection</span>
-                  </h2>
+             
 
-                  {/* Payment Tabs */}
-                  <div className="grid grid-cols-3 gap-3 mb-6">
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod("card")}
-                      className={`p-3.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-2 transition-all ${
-                        paymentMethod === "card"
-                          ? "bg-blue-600/20 border-blue-500 text-white shadow-lg shadow-blue-500/10"
-                          : "bg-slate-950/80 border-slate-800 text-slate-400 hover:text-white"
-                      }`}
-                    >
-                      <FaCreditCard className="text-lg" />
-                      <span>Credit Card</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod("paypal")}
-                      className={`p-3.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-2 transition-all ${
-                        paymentMethod === "paypal"
-                          ? "bg-blue-600/20 border-blue-500 text-white shadow-lg shadow-blue-500/10"
-                          : "bg-slate-950/80 border-slate-800 text-slate-400 hover:text-white"
-                      }`}
-                    >
-                      <FaCcPaypal className="text-lg" />
-                      <span>PayPal</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod("applepay")}
-                      className={`p-3.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-2 transition-all ${
-                        paymentMethod === "applepay"
-                          ? "bg-blue-600/20 border-blue-500 text-white shadow-lg shadow-blue-500/10"
-                          : "bg-slate-950/80 border-slate-800 text-slate-400 hover:text-white"
-                      }`}
-                    >
-                      <FaCcApplePay className="text-lg" />
-                      <span>Apple Pay</span>
-                    </button>
-                  </div>
-
-                  {/* Card Fields Conditional Display */}
-                  {paymentMethod === "card" ? (
-                    <div className="space-y-6">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-300 mb-2">
-                          Card Number
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="1234  5678  9012  3456"
-                          className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-6">
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-300 mb-2">
-                            Expiration Date
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="MM/YY"
-                            className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-300 mb-2">
-                            Security Code (CVV)
-                          </label>
-                          <input
-                            type="password"
-                            placeholder="***"
-                            className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-center py-6 border border-dashed border-slate-800 rounded-xl text-slate-400 text-xs">
-                      You will be redirected to complete your authentication via {paymentMethod === "paypal" ? "PayPal" : "Apple Pay"}.
-                    </div>
-                  )}
-                </div>
-
-              </form>
+             </form>
 
             </div>
 
@@ -276,28 +274,33 @@ const Checkout = () => {
 
             {/* Line Items List */}
             <div className="space-y-4 mb-6 pb-6 border-b border-slate-800/80">
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-md bg-slate-800 text-slate-300 text-xs font-bold flex items-center justify-center border border-slate-700">1</span>
-                  <span className="text-slate-300 font-medium">Wireless Headphones</span>
-                </div>
-                <span className="font-bold text-white">$89.99</span>
-              </div>
+              {cartItems.map((item) => (
+  <div
+    key={item.product._id}
+    className="flex items-center justify-between text-sm"
+  >
+    <div className="flex items-center gap-2">
+      <span className="w-5 h-5 rounded-md bg-slate-800 text-slate-300 text-xs font-bold flex items-center justify-center border border-slate-700">
+        {item.quantity}
+      </span>
 
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-md bg-slate-800 text-slate-300 text-xs font-bold flex items-center justify-center border border-slate-700">2</span>
-                  <span className="text-slate-300 font-medium">Smart Watch</span>
-                </div>
-                <span className="font-bold text-white">$299.98</span>
-              </div>
+      <span className="text-slate-300 font-medium">
+        {item.product.title}
+      </span>
+    </div>
+
+    <span className="font-bold text-white">
+      ${(item.product.price * item.quantity).toFixed(2)}
+    </span>
+  </div>
+))}
             </div>
 
             {/* Price Calculations */}
             <div className="space-y-3.5 text-sm text-slate-300">
               <div className="flex justify-between">
                 <span className="text-slate-400">Subtotal</span>
-                <span className="font-semibold text-white">$389.97</span>
+                <span className="font-semibold text-white">${subtotal.toFixed(2)}</span>
               </div>
 
               <div className="flex justify-between">
@@ -314,7 +317,7 @@ const Checkout = () => {
                 <span className="text-base font-bold text-white">Total Due</span>
                 <div className="text-right">
                   <span className="text-2xl font-black text-white">
-                    $414.97
+                    ${total.toFixed(2)}
                   </span>
                   <p className="text-[10px] text-slate-400">Includes $25.00 in taxes</p>
                 </div>
@@ -322,9 +325,12 @@ const Checkout = () => {
             </div>
 
             {/* Submit Action */}
-            <button className="mt-8 w-full bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-xl font-bold transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 active:scale-[0.99]">
+            <button 
+              className="mt-8 w-full cursor-pointer bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-xl font-bold transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 active:scale-[0.99]"
+              onClick={handlePlaceOrder}
+            >
               <FaLock className="text-xs" />
-              <span>Place Order ($414.97)</span>
+              <span>Place Order (${total.toFixed(2)})</span>
             </button>
 
             {/* Security Note */}

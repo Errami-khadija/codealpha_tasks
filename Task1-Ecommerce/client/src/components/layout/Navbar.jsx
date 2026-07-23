@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
+import { useCart } from "../../context/CartContext";
 import { FaShoppingCart, FaUser, FaSearch, FaBars, FaTimes } from "react-icons/fa";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
+  const { cartCount } = useCart();
   return (
     <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/80 transition-all">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between gap-6">
@@ -72,7 +73,7 @@ const Navbar = () => {
           >
             <FaShoppingCart className="text-lg" />
             <span className="absolute top-1.5 right-1.5 bg-blue-600 text-white font-bold rounded-full h-4 min-w-4 px-1 text-[10px] flex items-center justify-center shadow-md shadow-blue-500/50">
-              2
+              {cartCount}
             </span>
           </Link>
 

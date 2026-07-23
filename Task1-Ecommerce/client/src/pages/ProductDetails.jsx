@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { addToCart } from "../services/cartService";
+import { useCart } from "../context/CartContext";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { 
@@ -25,6 +26,8 @@ const [loading, setLoading] = useState(true);
 const [quantity, setQuantity] = useState(1);
 const [selectedImage, setSelectedImage] = useState("");
 const [isWishlisted, setIsWishlisted] = useState(false);
+
+const { fetchCartCount } = useCart();
 
 useEffect(() => {
   fetchProduct();
@@ -66,6 +69,7 @@ if (!product) {
 const handleAddToCart = async () => {
   try {
     await addToCart(product._id, quantity);
+     await fetchCartCount();
 
     Swal.fire({
       toast: true,

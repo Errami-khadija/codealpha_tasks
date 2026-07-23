@@ -123,3 +123,36 @@ export const updateCart = async (req, res) => {
     });
   }
 };
+export const removeFromCart = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { productId } = req.params;
+
+    const cart = await Cart.findOne({ user: userId });
+
+    if (!cart) {
+      return res.status(404).json({
+        success: false,
+        message: "Cart not found",
+      });
+    }
+
+    cart.items = cart.items.filter(
+      (item) => item.product.toString() !== productId
+    );
+
+    await cart.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Product removed from cart",
+      cart,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

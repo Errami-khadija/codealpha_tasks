@@ -1,7 +1,8 @@
 import React from "react";
 import { useEffect, useState } from "react";
-import { getCart, updateCart } from "../services/cartService";
+import { getCart, updateCart, removeFromCart } from "../services/cartService";
 import { Link } from "react-router-dom";
+import { useCart } from "../context/CartContext";
 import { 
   FaTrashAlt, 
   FaArrowLeft, 
@@ -16,6 +17,7 @@ import {
 
 const Cart = () => {
  const [cartItems, setCartItems] = useState([]);
+ const { fetchCartCount } = useCart();
  useEffect(() => {
   fetchCart();
 }, []);
@@ -38,19 +40,25 @@ const handleQuantityChange = async (productId, currentQuantity, delta) => {
   try {
     await updateCart(productId, newQuantity);
     await fetchCart();
+    await fetchCartCount();
   } catch (error) {
     console.error(error);
   }
 };
 
-  const handleRemove = (id) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
-  };
-
-  const subtotal = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0
-  );
+ const handleRemove = async (productId) => {
+  try {
+    await removeFromCart(productId);
+    await fetchCart();
+    await fetchCartCount();
+  } catch (error) {
+    console.error(error);
+  }
+};
+ const subtotal = cartItems.reduce(
+  (total, item) => total + item.product.price * item.quantity,
+  0
+);
   const tax = subtotal > 0 ? 12.50 : 0;
   const total = subtotal + tax;
 
@@ -69,7 +77,7 @@ const handleQuantityChange = async (productId, currentQuantity, delta) => {
               Your Order
             </span>
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
-              Shopping Cart ({cartItems.length})
+              Shopping Cart
             </h1>
           </div>
 
@@ -171,13 +179,13 @@ const handleQuantityChange = async (productId, currentQuantity, delta) => {
                       ${(item.product.price * item.quantity).toFixed(2)}
                     </span>
 
-                    <button
-                      onClick={() => handleRemove(item.id)}
-                      aria-label="Remove item"
-                      className="p-2.5 rounded-xl text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all"
-                    >
-                      <FaTrashAlt className="text-sm" />
-                    </button>
+                   <button
+  onClick={() => handleRemove(item.product._id)}
+  aria-label="Remove item"
+  className="p-2.5 rounded-xl text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all"
+>
+  <FaTrashAlt className="text-sm" />
+</button>
                   </div>
                 </div>
               ))}
@@ -236,10 +244,13 @@ const handleQuantityChange = async (productId, currentQuantity, delta) => {
               </div>
 
               {/* Checkout Action Button */}
-              <button className="mt-6 w-full bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-xl font-bold transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 active:scale-[0.99]">
-                <FaLock className="text-xs" />
-                <span>Proceed to Checkout</span>
-              </button>
+             <Link
+  to="/checkout"
+  className="mt-6 w-full bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-xl font-bold transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 active:scale-[0.99]"
+>
+  <FaLock className="text-xs" />
+  <span>Proceed to Checkout</span>
+</Link>
 
               {/* Guarantees / Security Badges */}
               <div className="mt-6 pt-6 border-t border-slate-800/80 flex items-center justify-center gap-2 text-xs text-slate-400">

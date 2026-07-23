@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useCart } from "../../context/CartContext";
 import { FaShoppingCart, FaStar, FaHeart, FaEye } from "react-icons/fa";
 
 import { useEffect, useState } from "react";
@@ -11,6 +12,7 @@ const FeaturedProducts = () => {
 
   const [products, setProducts] = useState([]);
 const [loading, setLoading] = useState(true);
+const { fetchCartCount } = useCart();
 
 useEffect(() => {
   fetchProducts();
@@ -35,6 +37,7 @@ const fetchProducts = async () => {
 const handleAddToCart = async (productId) => {
   try {
     await addToCart(productId);
+     await fetchCartCount();
 
     Swal.fire({
       toast: true,
@@ -89,7 +92,7 @@ const handleAddToCart = async (productId) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {products.map((product) => (
             <div
-              key={product.id}
+              key={product._id}
               className="group relative rounded-2xl bg-slate-900/60 border border-slate-800/80 hover:border-blue-500/50 backdrop-blur-xl overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-blue-500/10 flex flex-col justify-between"
             >
               {/* Image Container with Badges */}
